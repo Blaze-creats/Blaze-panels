@@ -64,7 +64,7 @@ a{color:inherit}
 .shot .vid{position:absolute;right:10px;bottom:10px}
 .tbody{padding:16px 18px 18px;display:grid;gap:8px}
 .tbody h3{font-size:22px;font-weight:800}
-.tbody .desc{color:var(--ink2);font-size:15px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.tbody .desc{color:var(--ink2);font-size:15px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-line}
 .price{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:26px}
 .perf{position:relative;height:0;border-top:2px dashed var(--line);margin:0 16px}
 .perf::before,.perf::after{content:"";position:absolute;top:-12px;width:22px;height:22px;border-radius:50%;background:var(--chalk)}
@@ -169,13 +169,13 @@ a{color:inherit}
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,sendPasswordResetEmail,updateProfile} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import {getFirestore,collection,doc,getDoc,getDocs,setDoc,updateDoc,deleteDoc,query,where,writeBatch} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import {initializeFirestore,collection,doc,getDoc,getDocs,setDoc,updateDoc,deleteDoc,query,where,writeBatch} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-/* ============ SETTINGS (yahin change karna) ============ */
+/* ============ SETTINGS ============ */
 const BRAND = "Blaze Panels";
-const ADMIN_EMAIL = "g187617@gmail.com";           // Firebase Auth me ye admin account pehle se bana hona chahiye
-const CLOUD_NAME = "dao40wei8", CLOUD_PRESET = "blazify";   // Cloudinary (Blazify wala)
-const FIREBASE_CONFIG = {                            // G18 wale project ki config. Naya project ho to ye badal dena
+const ADMIN_EMAIL = "g187617@gmail.com";
+const CLOUD_NAME = "dao40wei8", CLOUD_PRESET = "blazify";
+const FIREBASE_CONFIG = {
   apiKey:"AIzaSyC7txjxfn2XOSi2opgO0bC_i9nIBwC-IaI",
   authDomain:"requests-9019a.firebaseapp.com",
   projectId:"requests-9019a",
@@ -183,11 +183,16 @@ const FIREBASE_CONFIG = {                            // G18 wale project ki conf
   messagingSenderId:"202267313068",
   appId:"1:202267313068:web:e3189f731745aee685b009"
 };
-/* ======================================================= */
+/* ================================== */
 
 const app = initializeApp(FIREBASE_CONFIG);
 const auth = getAuth(app);
-const db = getFirestore(app);
+
+// Fast Firestore Connection (Solves Android network hanging on Saving/Loading)
+const db = initializeFirestore(app, {
+  experimentalForceLongPolling: true
+});
+
 const C = {users:'bp_users', panels:'bp_panels', secrets:'bp_secrets', orders:'bp_orders', utrs:'bp_utrs'};
 
 const $ = s => document.querySelector(s);
@@ -208,7 +213,7 @@ const I = {
 /* ---------- state ---------- */
 const S = {user:null, admin:false, view:'store', aTab:'requests', aFilter:'pending', authMode:'login',
   panels:[], orders:{}, secrets:{}, aOrders:[], aPanels:[], ready:false, busy:false, authMsg:'', authErr:''};
-let SH = null; // active sheet state
+let SH = null;
 const seen = JSON.parse(localStorage.getItem('bp_seen') || '{}');
 
 function toast(t){ const el = $('#toast'); el.textContent = t; el.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(()=>el.classList.remove('show'), 2600); }
@@ -235,13 +240,19 @@ function shrink(file, max=1400, q=.82){
     img.src = URL.createObjectURL(file);
   });
 }
+
 function uploadCloud(file, onP){
   return new Promise((res, rej) => {
     const fd = new FormData(); fd.append('file', file); fd.append('upload_preset', CLOUD_PRESET);
     const x = new XMLHttpRequest();
     x.open('POST', `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`);
     x.upload.onprogress = e => { if(e.lengthComputable && onP) onP(Math.round(e.loaded / e.total * 100)); };
-    x.onload = () => { try{ const d = JSON.parse(x.responseText); d.secure_url ? res(d.secure_url) : rej(new Error((d.error && d.error.message) || 'Upload failed')); }catch(e){ rej(new Error('Upload failed')); } };
+    x.onload = () => { 
+      try { 
+        const d = JSON.parse(x.responseText); 
+        d.secure_url ? res(d.secure_url) : rej(new Error((d.error && d.error.message) || 'Upload failed')); 
+      } catch(e){ rej(new Error('Upload failed')); } 
+    };
     x.onerror = () => rej(new Error('No internet. Upload failed.'));
     x.send(fd);
   });
@@ -254,13 +265,13 @@ async function loadStore(){
     getDocs(query(collection(db, C.panels), where('active','==',true))),
     getDocs(query(collection(db, C.orders), where('uid','==',u)))
   ]);
-  S.panels = ps.docs.map(d => ({...d.data(), id:d.id})).sort((a,b) => b.createdAt - a.createdAt);
+  S.panels = ps.docs.map(d => ({...d.data(), id:d.id})).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
   S.orders = {}; os.docs.forEach(d => { const o = d.data(); S.orders[o.panelId] = {...o, id:d.id}; });
 }
 async function loadAdmin(){
   const [ps, os] = await Promise.all([getDocs(collection(db, C.panels)), getDocs(collection(db, C.orders))]);
-  S.aPanels = ps.docs.map(d => ({...d.data(), id:d.id})).sort((a,b) => b.createdAt - a.createdAt);
-  S.aOrders = os.docs.map(d => ({...d.data(), id:d.id})).sort((a,b) => b.createdAt - a.createdAt);
+  S.aPanels = ps.docs.map(d => ({...d.data(), id:d.id})).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
+  S.aOrders = os.docs.map(d => ({...d.data(), id:d.id})).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
 }
 async function getSecret(panelId){
   if(S.secrets[panelId]) return S.secrets[panelId];
@@ -269,7 +280,13 @@ async function getSecret(panelId){
   return (S.secrets[panelId] = d.data());
 }
 async function refresh(silent){
-  try{ await loadStore(); if(S.admin) await loadAdmin(); }catch(e){ if(!silent) toast('Could not load. Check internet.'); console.error(e); }
+  try{ 
+    await loadStore(); 
+    if(S.admin) await loadAdmin(); 
+  }catch(e){ 
+    if(!silent) toast('Could not load. Check internet.'); 
+    console.error(e); 
+  }
   S.ready = true; render();
 }
 
@@ -383,7 +400,7 @@ function requestsView(){
   return `<div class="filters"><button class="${S.aFilter==='pending'?'on':''}" data-act="afilter" data-f="pending">Pending</button><button class="${S.aFilter==='all'?'on':''}" data-act="afilter" data-f="all">All (${S.aOrders.length})</button></div>
   <div class="list">${l.length ? l.map(o => `
     <div class="req">
-      <div class="head"><div><b>${esc(o.panelTitle)}</b><div style="color:var(--ink2);font-size:14px">${esc(o.name)} · ${esc(o.email)}</div></div><span class="chip ${o.status}">${o.status}</span></div>
+      <div class="head"><div><b>${esc(o.panelTitle)}</b><div style="color:var(--ink2);font-size:14px">${esc(o.name)} ·${esc(o.email)}</div></div><span class="chip ${o.status}">${o.status}</span></div>
       <div class="body">
         <a class="thumb" href="${esc(o.screenshot)}" target="_blank" rel="noopener"><img src="${esc(o.screenshot)}" alt="Payment screenshot" loading="lazy"></a>
         <dl><dt>Amount</dt><dd>${inr(o.price)}</dd><dt>UTR</dt><dd>${esc(o.utr)}</dd><dt>Sent</dt><dd>${when(o.createdAt)}</dd>${o.note?`<dt>Note</dt><dd>${esc(o.note)}</dd>`:''}</dl>
@@ -395,7 +412,7 @@ function panelsView(){
   return `<button class="btn" data-act="newpanel" style="margin-bottom:16px">Add new panel</button>
   <div class="list">${S.aPanels.length ? S.aPanels.map(p => `
     <div class="prow"><div class="pic">${p.previewImage?`<img src="${esc(p.previewImage)}" alt="">`:''}</div>
-      <div><h3>${esc(p.title)}</h3><div style="color:var(--ink2);font-size:14px">${inr(p.price)} · ${p.active?'Live':'Hidden'}</div></div>
+      <div><h3>${esc(p.title)}</h3><div style="color:var(--ink2);font-size:14px">${inr(p.price)} ·${p.active?'Live':'Hidden'}</div></div>
       <div class="row"><button class="btn ghost small" data-act="editpanel" data-id="${p.id}">Edit</button><button class="btn ghost small" data-act="delpanel" data-id="${p.id}">Delete</button></div>
     </div>`).join('') : `<div class="empty">No panels yet. Add your first one.</div>`}</div>`;
 }
@@ -428,6 +445,7 @@ function buySheet(){
     $('#b-utr').oninput = e => { SH.utr = e.target.value.replace(/\D/g, ''); e.target.value = SH.utr; };
   }
 }
+
 function videoSheet(title, url){
   const e = embedUrl(url);
   openSheet(`<button class="x" data-act="close" aria-label="Close">×</button><h2>${esc(title)}</h2>
@@ -443,6 +461,7 @@ function panelForm(p){
   };
   go();
 }
+
 function drawPanelForm(){
   const f = SH.f, fl = SH.files;
   openSheet(`<button class="x" data-act="close" aria-label="Close">×</button><h2>${SH.id?'Edit panel':'New panel'}</h2>
@@ -500,7 +519,11 @@ async function submitOrder(){
     const u = S.user, oid = u.uid + '_' + p.id, now = Date.now();
     const batch = writeBatch(db);
     batch.set(doc(db, C.utrs, utr), {uid:u.uid, createdAt:now});
-    batch.set(doc(db, C.orders, oid), {uid:u.uid, email:u.email, name:u.displayName || u.email.split('@')[0], panelId:p.id, panelTitle:p.title, price:p.price, utr, screenshot:url, status:'pending', note:'', createdAt:now});
+    batch.set(doc(db, C.orders, oid), {
+      uid:u.uid, email:u.email, name:u.displayName || u.email.split('@')[0], 
+      panelId:p.id, panelTitle:p.title, price:Number(p.price), 
+      utr, screenshot:url, status:'pending', note:'', createdAt:now
+    });
     await batch.commit();
     closeSheet(); toast('Sent. Admin will check your payment.'); await refresh(true);
   }catch(e){
@@ -528,22 +551,58 @@ async function savePanel(){
   if(!(Number(f.price) > 0)) return err('Enter a price.');
   if(f.previewVideo && !driveId(f.previewVideo)) return err('Preview video must be a Google Drive link.');
   if(f.setupVideo && !driveId(f.setupVideo)) return err('Setup video must be a Google Drive link.');
+  
   const btn = $('#p-go'); btn.disabled = true; $('#p-bar').hidden = false; err('');
   try{
-    const jobs = [['previewImage','Uploading photo'],['qr','Uploading QR'],['file','Uploading panel file']].filter(([k]) => fl[k]);
-    for(const [k, label] of jobs){
-      btn.textContent = label + '...';
-      const url = await uploadCloud(fl[k], n => { $('#p-bar i').style.width = n + '%'; });
-      if(k === 'file'){ f.fileUrl = url; f.fileName = fl[k].name; } else f[k] = url;
+    // Upload files in parallel for fastest speed
+    const jobs = [['previewImage','photo'],['qr','QR'],['file','file']].filter(([k]) => fl[k]);
+    if(jobs.length > 0){
+      btn.textContent = 'Uploading files...';
+      const uploadPromises = jobs.map(async ([k]) => {
+        const fileToUpload = k === 'file' ? fl[k] : await shrink(fl[k]);
+        const url = await uploadCloud(fileToUpload);
+        return {k, url, name: fl[k].name};
+      });
+      const results = await Promise.all(uploadPromises);
+      results.forEach(({k, url, name}) => {
+        if(k === 'file'){ f.fileUrl = url; f.fileName = name; }
+        else { f[k] = url; }
+      });
     }
+
     btn.textContent = 'Saving...';
     const id = SH.id || doc(collection(db, C.panels)).id;
     const old = S.aPanels.find(x => x.id === id);
-    await setDoc(doc(db, C.panels, id), {title:f.title.trim(), price:Number(f.price), desc:f.desc.trim(), previewImage:f.previewImage, previewVideo:f.previewVideo.trim(), qr:f.qr, active:!!f.active, createdAt: old ? old.createdAt : Date.now()});
-    await setDoc(doc(db, C.secrets, id), {setupVideo:f.setupVideo.trim(), fileUrl:f.fileUrl, fileName:f.fileName});
+    
+    // Single writeBatch commit = Instant Firestore write
+    const batch = writeBatch(db);
+    batch.set(doc(db, C.panels, id), {
+      title: f.title.trim(),
+      price: Number(f.price),
+      desc: (f.desc || '').trim(),
+      previewImage: f.previewImage || '',
+      previewVideo: (f.previewVideo || '').trim(),
+      qr: f.qr || '',
+      active: !!f.active,
+      createdAt: old ? (old.createdAt || Date.now()) : Date.now()
+    });
+    batch.set(doc(db, C.secrets, id), {
+      setupVideo: (f.setupVideo || '').trim(),
+      fileUrl: f.fileUrl || '',
+      fileName: f.fileName || ''
+    });
+
+    await batch.commit();
     delete S.secrets[id];
-    closeSheet(); toast('Panel saved.'); await refresh(true);
-  }catch(e){ btn.disabled = false; btn.textContent = 'Save panel'; $('#p-bar').hidden = true; err(e.message); }
+    closeSheet(); 
+    toast('Panel saved.'); 
+    await refresh(true);
+  }catch(e){ 
+    btn.disabled = false; 
+    btn.textContent = 'Save panel'; 
+    $('#p-bar').hidden = true; 
+    err(e.message || 'Saving failed. Check internet.'); 
+  }
 }
 
 /* ---------- events ---------- */
@@ -577,10 +636,12 @@ document.addEventListener('click', async e => {
   }
   if(a === 'savepanel') return savePanel();
 });
+
 document.addEventListener('keydown', e => {
   if(e.key === 'Escape') closeSheet();
   if(e.key === 'Enter' && e.target.closest('.auth')) doAuth();
 });
+
 function markSeen(){ setTimeout(() => { Object.values(S.orders).forEach(o => { if(o.status === 'approved') seen[o.id] = 1; }); localStorage.setItem('bp_seen', JSON.stringify(seen)); }, 1800); }
 </script>
 </body>
