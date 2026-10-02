@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Blaze Panels</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --chalk:#E8ECF0; --sheet:#FCFDFD; --ink:#0F2540; --ink2:#52627A; --line:#CCD5DF;
+  --ember:#D9481B; --ember-d:#B83811;
+  --ok:#168A5C; --okbg:#DCF2E7; --wait:#8F6209; --waitbg:#FAEECB; --bad:#B8322A; --badbg:#FADFDC;
+  --r:18px;
+}
+*{box-sizing:border-box;margin:0}
+html{background:var(--chalk)}
+body{font-family:'Figtree',system-ui,sans-serif;color:var(--ink);line-height:1.5;min-height:100vh;-webkit-font-smoothing:antialiased}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--ember);outline-offset:2px}
+h1,h2,h3{font-family:'Bricolage Grotesque',sans-serif;letter-spacing:-.02em;line-height:1.1}
+a{color:inherit}
+
+.wrap{max-width:1080px;margin:0 auto;padding:0 18px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 0 10px}
+.brand{display:flex;align-items:center;gap:9px;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:22px;letter-spacing:-.03em}
+.brand svg{width:26px;height:26px}
+.who{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--ink2)}
+.who b{color:var(--ink);font-weight:600;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tabs{display:flex;gap:22px;border-bottom:2px solid var(--line);margin-bottom:26px}
+.tabs button{background:none;border:0;padding:12px 2px;font-weight:600;color:var(--ink2);border-bottom:3px solid transparent;margin-bottom:-2px}
+.tabs button.on{color:var(--ink);border-color:var(--ember)}
+.tabs .count{background:var(--ember);color:#fff;border-radius:99px;font-size:12px;padding:1px 7px;margin-left:6px}
+
+.btn{border:0;border-radius:12px;padding:12px 18px;font-weight:600;background:var(--ember);color:#fff;transition:background .15s}
+.btn:hover{background:var(--ember-d)}
+.btn.ink{background:var(--ink)}
+.btn.ink:hover{background:#0a1a30}
+.btn.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 2px var(--line)}
+.btn.ghost:hover{background:rgba(15,37,64,.05)}
+.btn.small{padding:8px 13px;font-size:14px;border-radius:10px}
+.btn.ok{background:var(--ok)}
+.btn.bad{background:var(--bad)}
+.btn[disabled]{opacity:.55;cursor:not-allowed}
+.btn.full{width:100%}
+.btn svg{width:16px;height:16px;vertical-align:-3px;margin-right:6px}
+.link{background:none;border:0;color:var(--ember-d);font-weight:600;text-decoration:underline;padding:0}
+
+/* intro */
+.intro{display:grid;gap:22px;margin:6px 0 34px}
+.intro h1{font-size:clamp(34px,7vw,58px);font-weight:800;max-width:15ch}
+.intro p{color:var(--ink2);max-width:46ch}
+.how{display:flex;gap:10px;flex-wrap:wrap}
+.how li{list-style:none;background:var(--sheet);border-radius:12px;padding:9px 14px;font-size:14px;font-weight:500;box-shadow:inset 0 0 0 1px var(--line)}
+.how li b{color:var(--ember-d)}
+
+/* ticket */
+.grid{display:grid;gap:26px;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));padding-bottom:60px}
+.ticket{background:var(--sheet);border-radius:var(--r);box-shadow:0 1px 0 var(--line),0 18px 30px -22px rgba(15,37,64,.45);position:relative}
+.shot{aspect-ratio:16/10;border-radius:var(--r) var(--r) 0 0;overflow:hidden;background:linear-gradient(135deg,#d6dde6,#eef1f5);display:grid;place-items:center;color:var(--ink2);font-size:14px;position:relative}
+.shot img{width:100%;height:100%;object-fit:cover;display:block}
+.shot .vid{position:absolute;right:10px;bottom:10px}
+.tbody{padding:16px 18px 18px;display:grid;gap:8px}
+.tbody h3{font-size:22px;font-weight:800}
+.tbody .desc{color:var(--ink2);font-size:15px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.price{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:26px}
+.perf{position:relative;height:0;border-top:2px dashed var(--line);margin:0 16px}
+.perf::before,.perf::after{content:"";position:absolute;top:-12px;width:22px;height:22px;border-radius:50%;background:var(--chalk)}
+.perf::before{left:-27px}
+.perf::after{right:-27px}
+.seal{position:relative;overflow:hidden;padding:16px 18px 18px;border-radius:0 0 var(--r) var(--r);display:grid;gap:12px;
+  background:repeating-linear-gradient(135deg,rgba(15,37,64,.06) 0 7px,transparent 7px 14px)}
+.seal.open{background:var(--okbg)}
+.seal.fresh::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(135deg,rgba(15,37,64,.06) 0 7px,transparent 7px 14px),#EBEFF3;
+  animation:peel 1s .35s cubic-bezier(.7,0,.25,1) forwards}
+@keyframes peel{to{transform:translateX(104%)}}
+.seal p{font-size:14px;color:var(--ink2)}
+.seal .lockline{display:flex;gap:10px;align-items:flex-start;font-weight:500;color:var(--ink)}
+.seal .lockline svg{flex:none;width:20px;height:20px;margin-top:1px}
+.seal .row{display:flex;gap:10px;flex-wrap:wrap}
+.note{font-size:14px;background:var(--badbg);color:var(--bad);border-radius:10px;padding:9px 12px}
+
+.rail{display:flex;list-style:none;padding:0;gap:0}
+.rail li{flex:1;font-size:13px;font-weight:600;color:var(--ink2);position:relative;padding-top:20px}
+.rail li::before{content:"";position:absolute;left:0;top:0;width:12px;height:12px;border-radius:50%;background:var(--line)}
+.rail li::after{content:"";position:absolute;left:14px;right:4px;top:5px;height:2px;background:var(--line)}
+.rail li:last-child::after{display:none}
+.rail li.done{color:var(--ink)}
+.rail li.done::before,.rail li.done::after{background:var(--ink)}
+.rail li.now{color:var(--wait)}
+.rail li.now::before{background:var(--wait);box-shadow:0 0 0 4px var(--waitbg)}
+.rail li.fail{color:var(--bad)}
+.rail li.fail::before{background:var(--bad);box-shadow:0 0 0 4px var(--badbg)}
+
+/* sheet */
+.veil{position:fixed;inset:0;background:rgba(15,37,64,.5);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+.sheet{background:var(--sheet);width:100%;max-width:520px;max-height:92vh;overflow:auto;border-radius:22px 22px 0 0;padding:22px 20px 26px;display:grid;gap:16px;animation:rise .22s ease-out}
+@keyframes rise{from{transform:translateY(24px);opacity:0}}
+@media(min-width:640px){.veil{align-items:center}.sheet{border-radius:22px}}
+.sheet h2{font-size:26px;font-weight:800}
+.sheet .x{justify-self:end;margin:-6px -6px -10px 0;background:none;border:0;font-size:28px;line-height:1;padding:6px 10px;color:var(--ink2)}
+.qrbox{background:#fff;border-radius:16px;padding:14px;box-shadow:inset 0 0 0 2px var(--line);display:grid;place-items:center;gap:10px}
+.qrbox img{width:min(100%,260px);aspect-ratio:1;object-fit:contain}
+.amount{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:34px}
+.field{display:grid;gap:6px}
+.field label{font-size:14px;font-weight:600}
+.field input,.field textarea{background:#fff;border:0;box-shadow:inset 0 0 0 2px var(--line);border-radius:12px;padding:12px 14px;width:100%}
+.field input:focus,.field textarea:focus{outline:none;box-shadow:inset 0 0 0 2px var(--ink)}
+.field small{color:var(--ink2);font-size:13px}
+.drop{display:grid;place-items:center;gap:6px;text-align:center;border:2px dashed var(--line);border-radius:14px;padding:18px;background:#fff;font-size:14px;color:var(--ink2);cursor:pointer}
+.drop img{max-height:160px;border-radius:8px}
+.drop input{display:none}
+.err{color:var(--bad);font-size:14px;font-weight:500;min-height:1em}
+.vframe{aspect-ratio:16/9;width:100%;border:0;border-radius:12px;background:#000}
+
+/* auth */
+.authwrap{min-height:100vh;display:grid;place-items:center;padding:24px 18px}
+.auth{background:var(--sheet);border-radius:22px;padding:28px 24px;width:100%;max-width:420px;display:grid;gap:18px;box-shadow:0 22px 40px -26px rgba(15,37,64,.5)}
+.auth h1{font-size:34px;font-weight:800}
+.auth .sub{color:var(--ink2);margin-top:-8px}
+.seg{display:flex;background:var(--chalk);border-radius:12px;padding:4px}
+.seg button{flex:1;border:0;background:none;padding:9px;border-radius:9px;font-weight:600;color:var(--ink2)}
+.seg button.on{background:var(--sheet);color:var(--ink);box-shadow:0 1px 3px rgba(15,37,64,.2)}
+
+/* admin */
+.list{display:grid;gap:14px;padding-bottom:60px}
+.req,.prow{background:var(--sheet);border-radius:16px;padding:14px;display:grid;gap:12px;box-shadow:0 1px 0 var(--line)}
+.req .head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.req .head b{font-size:17px}
+.chip{border-radius:99px;font-size:12px;font-weight:600;padding:3px 10px;white-space:nowrap}
+.chip.pending{background:var(--waitbg);color:var(--wait)}
+.chip.approved{background:var(--okbg);color:var(--ok)}
+.chip.rejected{background:var(--badbg);color:var(--bad)}
+.req .body{display:flex;gap:14px;align-items:flex-start}
+.req .thumb{width:92px;height:122px;border-radius:10px;overflow:hidden;background:var(--chalk);flex:none;display:block}
+.req .thumb img{width:100%;height:100%;object-fit:cover}
+.req dl{display:grid;gap:4px;font-size:14px}
+.req dt{color:var(--ink2);font-size:13px}
+.req dd{font-weight:600;margin:0 0 4px;word-break:break-all}
+.req .row,.prow .row{display:flex;gap:10px;flex-wrap:wrap}
+.filters{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.filters button{border:0;border-radius:99px;padding:7px 14px;font-weight:600;background:var(--sheet);box-shadow:inset 0 0 0 1px var(--line)}
+.filters button.on{background:var(--ink);color:#fff}
+.prow{grid-template-columns:64px 1fr auto;align-items:center}
+.prow .pic{width:64px;height:64px;border-radius:10px;overflow:hidden;background:var(--chalk)}
+.prow .pic img{width:100%;height:100%;object-fit:cover}
+.prow h3{font-size:18px}
+.empty{background:var(--sheet);border-radius:16px;padding:30px 20px;text-align:center;color:var(--ink2)}
+.toggle{display:flex;align-items:center;gap:10px;font-weight:600}
+.toggle input{width:20px;height:20px;accent-color:var(--ember)}
+.bar{height:6px;border-radius:9px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--ember);transition:width .2s}
+
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(30px);background:var(--ink);color:#fff;padding:11px 18px;border-radius:12px;font-weight:500;font-size:14px;opacity:0;pointer-events:none;transition:.25s;z-index:50;max-width:90vw;text-align:center}
+#toast.show{opacity:1;transform:translateX(-50%)}
+.spin{width:22px;height:22px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--ember);animation:sp .7s linear infinite;margin:40px auto}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.seal.fresh::after{display:none}}
+</style>
+</head>
+<body>
+<div id="app"><div class="spin"></div></div>
+<div id="sheet-root"></div>
+<div id="toast" role="status"></div>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,sendPasswordResetEmail,updateProfile} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import {getFirestore,collection,doc,getDoc,getDocs,setDoc,updateDoc,deleteDoc,query,where,writeBatch} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+/* ============ SETTINGS (yahin change karna) ============ */
+const BRAND = "Blaze Panels";
+const ADMIN_EMAIL = "g187617@gmail.com";           // Firebase Auth me ye admin account pehle se bana hona chahiye
+const CLOUD_NAME = "dao40wei8", CLOUD_PRESET = "blazify";   // Cloudinary (Blazify wala)
+const FIREBASE_CONFIG = {                            // G18 wale project ki config. Naya project ho to ye badal dena
+  apiKey:"AIzaSyC7txjxfn2XOSi2opgO0bC_i9nIBwC-IaI",
+  authDomain:"requests-9019a.firebaseapp.com",
+  projectId:"requests-9019a",
+  storageBucket:"requests-9019a.firebasestorage.app",
+  messagingSenderId:"202267313068",
+  appId:"1:202267313068:web:e3189f731745aee685b009"
+};
+/* ======================================================= */
+
+const app = initializeApp(FIREBASE_CONFIG);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const C = {users:'bp_users', panels:'bp_panels', secrets:'bp_secrets', orders:'bp_orders', utrs:'bp_utrs'};
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const inr = n => '₹' + Number(n || 0).toLocaleString('en-IN');
+const when = ms => new Date(ms).toLocaleString('en-IN', {dateStyle:'medium', timeStyle:'short'});
+const driveId = u => { const m = String(u||'').match(/\/d\/([\w-]+)|[?&]id=([\w-]+)/); return m ? (m[1] || m[2]) : null; };
+const embedUrl = u => { const id = driveId(u); return id ? `https://drive.google.com/file/d/${id}/preview` : null; };
+
+const I = {
+  flame:'<svg viewBox="0 0 24 24" fill="none"><path d="M12 2c.9 4 6 6 6 11a6 6 0 0 1-12 0c0-2 1-3.6 2.2-4.6.1 2 1 3 2.1 3.1C9.600 7.700 10.100 4.500 12 2z" fill="#D9481B"/><path d="M12 22a3 3 0 0 1-3-3c0-1.600 1.400-2.400 3-4 1.600 1.600 3 2.400 3 4a3 3 0 0 1-3 3z" fill="#FCFDFD"/></svg>',
+  lock:'<svg viewBox="0 0 24 24" fill="none" stroke="#0F2540" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>',
+  play:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.500v15a1 1 0 0 0 1.500.9l12-7.500a1 1 0 0 0 0-1.700l-12-7.500A1 1 0 0 0 7 4.500z"/></svg>',
+  down:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.400" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0-4.500-4.500M12 15l4.500-4.500M5 20h14"/></svg>',
+  img:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#52627A" stroke-width="1.800" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.500"/><path d="m4 18 5-5 4 4 3-3 4 4"/></svg>'
+};
+
+/* ---------- state ---------- */
+const S = {user:null, admin:false, view:'store', aTab:'requests', aFilter:'pending', authMode:'login',
+  panels:[], orders:{}, secrets:{}, aOrders:[], aPanels:[], ready:false, busy:false, authMsg:'', authErr:''};
+let SH = null; // active sheet state
+const seen = JSON.parse(localStorage.getItem('bp_seen') || '{}');
+
+function toast(t){ const el = $('#toast'); el.textContent = t; el.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(()=>el.classList.remove('show'), 2600); }
+function authError(e){
+  const m = {'auth/invalid-credential':'Email or password is wrong.','auth/wrong-password':'Email or password is wrong.','auth/user-not-found':'Email or password is wrong.',
+    'auth/email-already-in-use':'This email already has an account. Log in instead.','auth/weak-password':'Password needs at least 6 characters.',
+    'auth/invalid-email':'Enter a valid email address.','auth/too-many-requests':'Too many tries. Wait a few minutes and try again.','auth/network-request-failed':'No internet connection.'};
+  return m[e && e.code] || (e && e.message) || 'Something went wrong. Try again.';
+}
+
+/* ---------- uploads ---------- */
+function shrink(file, max=1400, q=.82){
+  return new Promise(res => {
+    if(!file.type.startsWith('image/')) return res(file);
+    const img = new Image();
+    img.onload = () => {
+      const r = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement('canvas'); c.width = Math.round(img.width*r); c.height = Math.round(img.height*r);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      c.toBlob(b => res(b ? new File([b], 'proof.jpg', {type:'image/jpeg'}) : file), 'image/jpeg', q);
+      URL.revokeObjectURL(img.src);
+    };
+    img.onerror = () => res(file);
+    img.src = URL.createObjectURL(file);
+  });
+}
+function uploadCloud(file, onP){
+  return new Promise((res, rej) => {
+    const fd = new FormData(); fd.append('file', file); fd.append('upload_preset', CLOUD_PRESET);
+    const x = new XMLHttpRequest();
+    x.open('POST', `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`);
+    x.upload.onprogress = e => { if(e.lengthComputable && onP) onP(Math.round(e.loaded / e.total * 100)); };
+    x.onload = () => { try{ const d = JSON.parse(x.responseText); d.secure_url ? res(d.secure_url) : rej(new Error((d.error && d.error.message) || 'Upload failed')); }catch(e){ rej(new Error('Upload failed')); } };
+    x.onerror = () => rej(new Error('No internet. Upload failed.'));
+    x.send(fd);
+  });
+}
+
+/* ---------- data ---------- */
+async function loadStore(){
+  const u = S.user.uid;
+  const [ps, os] = await Promise.all([
+    getDocs(query(collection(db, C.panels), where('active','==',true))),
+    getDocs(query(collection(db, C.orders), where('uid','==',u)))
+  ]);
+  S.panels = ps.docs.map(d => ({...d.data(), id:d.id})).sort((a,b) => b.createdAt - a.createdAt);
+  S.orders = {}; os.docs.forEach(d => { const o = d.data(); S.orders[o.panelId] = {...o, id:d.id}; });
+}
+async function loadAdmin(){
+  const [ps, os] = await Promise.all([getDocs(collection(db, C.panels)), getDocs(collection(db, C.orders))]);
+  S.aPanels = ps.docs.map(d => ({...d.data(), id:d.id})).sort((a,b) => b.createdAt - a.createdAt);
+  S.aOrders = os.docs.map(d => ({...d.data(), id:d.id})).sort((a,b) => b.createdAt - a.createdAt);
+}
+async function getSecret(panelId){
+  if(S.secrets[panelId]) return S.secrets[panelId];
+  const d = await getDoc(doc(db, C.secrets, panelId));
+  if(!d.exists()) throw new Error('Files are not added to this panel yet. Contact admin.');
+  return (S.secrets[panelId] = d.data());
+}
+async function refresh(silent){
+  try{ await loadStore(); if(S.admin) await loadAdmin(); }catch(e){ if(!silent) toast('Could not load. Check internet.'); console.error(e); }
+  S.ready = true; render();
+}
+
+onAuthStateChanged(auth, async u => {
+  S.user = u; S.admin = !!u && (u.email || '').toLowerCase() === ADMIN_EMAIL.toLowerCase();
+  S.ready = false; S.view = 'store';
+  if(u){ render(); await refresh(); } else { S.panels = []; S.orders = {}; S.secrets = {}; S.ready = true; render(); }
+});
+
+/* ---------- render ---------- */
+function render(){
+  const root = $('#app');
+  if(!S.user){ root.innerHTML = authView(); return; }
+  const pend = S.aOrders.filter(o => o.status === 'pending').length;
+  const name = S.user.displayName || S.user.email.split('@')[0];
+  root.innerHTML = `
+  <div class="wrap">
+    <header class="top">
+      <div class="brand">${I.flame}${esc(BRAND)}</div>
+      <div class="who"><b>${esc(name)}</b><button class="btn ghost small" data-act="logout">Log out</button></div>
+    </header>
+    <nav class="tabs">
+      <button class="${S.view==='store'?'on':''}" data-act="view" data-v="store">Panels</button>
+      <button class="${S.view==='mine'?'on':''}" data-act="view" data-v="mine">My purchases</button>
+      ${S.admin ? `<button class="${S.view==='admin'?'on':''}" data-act="view" data-v="admin">Admin${pend?`<span class="count">${pend}</span>`:''}</button>` : ''}
+    </nav>
+    ${!S.ready ? '<div class="spin"></div>' : S.view==='store' ? storeView() : S.view==='mine' ? mineView() : adminView()}
+  </div>`;
+  if(S.ready && S.view !== 'admin') markSeen();
+}
+
+function authView(){
+  const m = S.authMode;
+  return `<div class="authwrap"><div class="auth">
+    <div class="brand">${I.flame}${esc(BRAND)}</div>
+    <h1>${m==='login'?'Welcome back':m==='signup'?'Create your account':'Reset password'}</h1>
+    <p class="sub">${m==='forgot'?'We will email you a link to set a new password.':'Your purchases and downloads stay tied to this account.'}</p>
+    ${m!=='forgot'?`<div class="seg"><button class="${m==='login'?'on':''}" data-act="amode" data-m="login">Log in</button><button class="${m==='signup'?'on':''}" data-act="amode" data-m="signup">Sign up</button></div>`:''}
+    <div class="field" ${m==='signup'?'':'hidden'}><label for="a-name">Name</label><input id="a-name" autocomplete="name" placeholder="Your name"></div>
+    <div class="field"><label for="a-email">Email</label><input id="a-email" type="email" autocomplete="email" placeholder="you@gmail.com"></div>
+    <div class="field" ${m==='forgot'?'hidden':''}><label for="a-pass">Password</label><input id="a-pass" type="password" autocomplete="${m==='signup'?'new-password':'current-password'}" placeholder="At least 6 characters"></div>
+    <div class="err" id="a-err">${esc(S.authErr)}</div>
+    ${S.authMsg?`<div class="note" style="background:var(--okbg);color:var(--ok)">${esc(S.authMsg)}</div>`:''}
+    <button class="btn full" data-act="auth" ${S.busy?'disabled':''}>${m==='login'?'Log in':m==='signup'?'Create account':'Send reset link'}</button>
+    ${m==='login'?`<button class="link" data-act="amode" data-m="forgot">Forgot password?</button>`:''}
+    ${m==='forgot'?`<button class="link" data-act="amode" data-m="login">Back to log in</button>`:''}
+  </div></div>`;
+}
+
+function rail(o){
+  const st = o.status;
+  return `<ol class="rail">
+    <li class="done">Paid</li>
+    <li class="${st==='pending'?'now':st==='rejected'?'fail':'done'}">${st==='rejected'?'Rejected':'Checking'}</li>
+    <li class="${st==='approved'?'done':''}">Unlocked</li></ol>`;
+}
+
+function ticket(p){
+  const o = S.orders[p.id];
+  const st = o && o.status;
+  const fresh = st === 'approved' && !seen[o.id];
+  let seal = '';
+  if(!o){
+    seal = `<div class="lockline">${I.lock}<span>Setup video and panel file are sealed until your payment is approved.</span></div>
+      <div class="row"><button class="btn" data-act="buy" data-id="${p.id}">Buy for ${inr(p.price)}</button></div>`;
+  } else if(st === 'pending'){
+    seal = `${rail(o)}<p>Admin is checking UTR <b>${esc(o.utr)}</b>. Your files unlock as soon as it is approved.</p>`;
+  } else if(st === 'rejected'){
+    seal = `${rail(o)}<div class="note">${esc(o.note || 'Payment could not be verified.')}</div>
+      <div class="row"><button class="btn" data-act="buy" data-id="${p.id}">Pay again with correct proof</button></div>`;
+  } else {
+    seal = `<div class="lockline">${I.lock.replace('#0F2540','#168A5C')}<span><b>Unlocked.</b> Your files are ready.</span></div>
+      <div class="row"><button class="btn ink" data-act="watch" data-id="${p.id}">${I.play}Setup video</button>
+      <button class="btn ok" data-act="download" data-id="${p.id}">${I.down}Download panel</button></div>`;
+  }
+  const pv = p.previewVideo && embedUrl(p.previewVideo);
+  return `<article class="ticket">
+    <div class="shot">${p.previewImage?`<img src="${esc(p.previewImage)}" alt="${esc(p.title)} preview" loading="lazy">`:I.img}
+      ${pv?`<button class="btn small ink vid" data-act="preview" data-id="${p.id}">${I.play}Preview</button>`:''}</div>
+    <div class="tbody"><h3>${esc(p.title)}</h3>${p.desc?`<p class="desc">${esc(p.desc)}</p>`:''}<div class="price">${inr(p.price)}</div></div>
+    <div class="perf"></div>
+    <div class="seal ${st==='approved'?'open':''} ${fresh?'fresh':''}">${seal}</div>
+  </article>`;
+}
+
+function storeView(){
+  return `<section class="intro">
+      <h1>Pick a panel. Pay by UPI. Files unlock after approval.</h1>
+      <p>Every panel shows a preview first. The setup video and the file stay sealed until the admin confirms your payment.</p>
+      <ul class="how" style="padding:0"><li><b>1</b> Scan the QR and pay</li><li><b>2</b> Send screenshot and UTR</li><li><b>3</b> Download once approved</li></ul>
+    </section>
+    ${S.panels.length ? `<div class="grid">${S.panels.map(ticket).join('')}</div>` : `<div class="empty">No panels are live right now. Check back soon.</div>`}`;
+}
+
+function mineView(){
+  const list = S.panels.filter(p => S.orders[p.id]);
+  const hidden = Object.values(S.orders).filter(o => !S.panels.find(p => p.id === o.panelId));
+  if(!list.length && !hidden.length) return `<div class="empty">You have not bought anything yet.<br><br><button class="btn" data-act="view" data-v="store">Browse panels</button></div>`;
+  return `<div class="grid">${list.map(ticket).join('')}</div>`;
+}
+
+function adminView(){
+  return `<div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap">
+      <button class="btn ${S.aTab==='requests'?'ink':'ghost'} small" data-act="atab" data-t="requests">Requests</button>
+      <button class="btn ${S.aTab==='panels'?'ink':'ghost'} small" data-act="atab" data-t="panels">Manage panels</button>
+      <button class="btn ghost small" data-act="reload">Refresh</button></div>
+    ${S.aTab==='requests' ? requestsView() : panelsView()}`;
+}
+function requestsView(){
+  const l = S.aFilter === 'pending' ? S.aOrders.filter(o => o.status === 'pending') : S.aOrders;
+  return `<div class="filters"><button class="${S.aFilter==='pending'?'on':''}" data-act="afilter" data-f="pending">Pending</button><button class="${S.aFilter==='all'?'on':''}" data-act="afilter" data-f="all">All (${S.aOrders.length})</button></div>
+  <div class="list">${l.length ? l.map(o => `
+    <div class="req">
+      <div class="head"><div><b>${esc(o.panelTitle)}</b><div style="color:var(--ink2);font-size:14px">${esc(o.name)} · ${esc(o.email)}</div></div><span class="chip ${o.status}">${o.status}</span></div>
+      <div class="body">
+        <a class="thumb" href="${esc(o.screenshot)}" target="_blank" rel="noopener"><img src="${esc(o.screenshot)}" alt="Payment screenshot" loading="lazy"></a>
+        <dl><dt>Amount</dt><dd>${inr(o.price)}</dd><dt>UTR</dt><dd>${esc(o.utr)}</dd><dt>Sent</dt><dd>${when(o.createdAt)}</dd>${o.note?`<dt>Note</dt><dd>${esc(o.note)}</dd>`:''}</dl>
+      </div>
+      ${o.status==='pending' ? `<div class="row"><button class="btn ok small" data-act="approve" data-id="${o.id}">Approve</button><button class="btn bad small" data-act="reject" data-id="${o.id}">Reject</button></div>` : ''}
+    </div>`).join('') : `<div class="empty">${S.aFilter==='pending'?'No pending requests.':'No requests yet.'}</div>`}</div>`;
+}
+function panelsView(){
+  return `<button class="btn" data-act="newpanel" style="margin-bottom:16px">Add new panel</button>
+  <div class="list">${S.aPanels.length ? S.aPanels.map(p => `
+    <div class="prow"><div class="pic">${p.previewImage?`<img src="${esc(p.previewImage)}" alt="">`:''}</div>
+      <div><h3>${esc(p.title)}</h3><div style="color:var(--ink2);font-size:14px">${inr(p.price)} · ${p.active?'Live':'Hidden'}</div></div>
+      <div class="row"><button class="btn ghost small" data-act="editpanel" data-id="${p.id}">Edit</button><button class="btn ghost small" data-act="delpanel" data-id="${p.id}">Delete</button></div>
+    </div>`).join('') : `<div class="empty">No panels yet. Add your first one.</div>`}</div>`;
+}
+
+/* ---------- sheets ---------- */
+function openSheet(html){ $('#sheet-root').innerHTML = `<div class="veil" data-act="veil"><div class="sheet" role="dialog" aria-modal="true">${html}</div></div>`; }
+function closeSheet(){ SH = null; $('#sheet-root').innerHTML = ''; }
+
+function buySheet(){
+  const p = S.panels.find(x => x.id === SH.id);
+  if(SH.step === 'pay'){
+    openSheet(`<button class="x" data-act="close" aria-label="Close">×</button>
+      <h2>Pay for ${esc(p.title)}</h2>
+      <div class="qrbox">${p.qr?`<img src="${esc(p.qr)}" alt="Payment QR code">`:'<p>QR is not added yet. Contact admin.</p>'}<div class="amount">${inr(p.price)}</div></div>
+      <p style="color:var(--ink2);font-size:14px">Scan with any UPI app and pay the exact amount. Then take a screenshot of the success screen.</p>
+      <button class="btn full" data-act="paid" ${p.qr?'':'disabled'}>I have paid</button>`);
+  } else {
+    openSheet(`<button class="x" data-act="close" aria-label="Close">×</button>
+      <h2>Send payment proof</h2>
+      <label class="drop" for="b-file">${SH.preview?`<img src="${SH.preview}" alt="Your screenshot">`:`${I.img}<span>Tap to choose your payment screenshot</span>`}<input id="b-file" type="file" accept="image/*"></label>
+      <div class="field"><label for="b-utr">UTR / transaction ID</label><input id="b-utr" inputmode="numeric" maxlength="12" placeholder="12 digit UTR" value="${esc(SH.utr||'')}"><small>Find it in the payment details of your UPI app.</small></div>
+      <div class="err" id="b-err"></div>
+      <div class="bar" id="b-bar" hidden><i></i></div>
+      <button class="btn full" data-act="submitorder" id="b-go">Submit for approval</button>
+      <button class="link" data-act="backpay">Back to QR</button>`);
+    $('#b-file').onchange = async e => {
+      const f = e.target.files[0]; if(!f) return;
+      SH.file = await shrink(f); SH.preview = URL.createObjectURL(SH.file); SH.utr = $('#b-utr').value; buySheet();
+    };
+    $('#b-utr').oninput = e => { SH.utr = e.target.value.replace(/\D/g, ''); e.target.value = SH.utr; };
+  }
+}
+function videoSheet(title, url){
+  const e = embedUrl(url);
+  openSheet(`<button class="x" data-act="close" aria-label="Close">×</button><h2>${esc(title)}</h2>
+    ${e?`<iframe class="vframe" src="${esc(e)}" allow="autoplay; fullscreen" allowfullscreen></iframe>`:`<p>This video link is not a Google Drive link.</p>`}
+    <a class="btn ghost full" style="text-align:center;text-decoration:none" href="${esc(url)}" target="_blank" rel="noopener">Open in Drive</a>`);
+}
+
+function panelForm(p){
+  SH = {type:'panel', id:p ? p.id : null, f:{title:p?.title||'', price:p?.price||'', desc:p?.desc||'', previewVideo:p?.previewVideo||'', previewImage:p?.previewImage||'', qr:p?.qr||'', active:p ? p.active : true, setupVideo:'', fileUrl:'', fileName:''}, files:{}};
+  const go = async () => {
+    if(p){ try{ const s = await getSecret(p.id); Object.assign(SH.f, {setupVideo:s.setupVideo||'', fileUrl:s.fileUrl||'', fileName:s.fileName||''}); }catch(e){} }
+    drawPanelForm();
+  };
+  go();
+}
+function drawPanelForm(){
+  const f = SH.f, fl = SH.files;
+  openSheet(`<button class="x" data-act="close" aria-label="Close">×</button><h2>${SH.id?'Edit panel':'New panel'}</h2>
+    <div class="field"><label for="p-title">Panel name</label><input id="p-title" value="${esc(f.title)}"></div>
+    <div class="field"><label for="p-price">Price in ₹</label><input id="p-price" type="number" inputmode="numeric" value="${esc(f.price)}"></div>
+    <div class="field"><label for="p-desc">Short description</label><textarea id="p-desc" rows="3">${esc(f.desc)}</textarea></div>
+    <div class="field"><label>Preview photo</label><label class="drop" for="p-img"><span>${fl.previewImage?esc(fl.previewImage.name):f.previewImage?'Photo added. Tap to replace':'Tap to choose a photo'}</span><input id="p-img" type="file" accept="image/*"></label></div>
+    <div class="field"><label for="p-pv">Preview video (Google Drive link, optional)</label><input id="p-pv" value="${esc(f.previewVideo)}" placeholder="https://drive.google.com/file/d/..."></div>
+    <div class="field"><label>Payment QR for this panel</label><label class="drop" for="p-qr"><span>${fl.qr?esc(fl.qr.name):f.qr?'QR added. Tap to replace':'Tap to choose the QR image'}</span><input id="p-qr" type="file" accept="image/*"></label></div>
+    <div class="field"><label for="p-sv">Setup video (Google Drive link, locked until approval)</label><input id="p-sv" value="${esc(f.setupVideo)}" placeholder="https://drive.google.com/file/d/..."><small>Drive share setting must be "Anyone with the link".</small></div>
+    <div class="field"><label>Panel file (locked until approval)</label><label class="drop" for="p-file"><span>${fl.file?esc(fl.file.name):f.fileName?esc(f.fileName)+' added. Tap to replace':'Tap to choose the file'}</span><input id="p-file" type="file"></label></div>
+    <label class="toggle"><input type="checkbox" id="p-on" ${f.active?'checked':''}> Show this panel in the store</label>
+    <div class="err" id="p-err"></div>
+    <div class="bar" id="p-bar" hidden><i></i></div>
+    <button class="btn full" data-act="savepanel" id="p-go">Save panel</button>`);
+  const bind = (id, k) => { $(id).oninput = e => f[k] = e.target.value; };
+  bind('#p-title','title'); bind('#p-price','price'); bind('#p-desc','desc'); bind('#p-pv','previewVideo'); bind('#p-sv','setupVideo');
+  $('#p-on').onchange = e => f.active = e.target.checked;
+  [['#p-img','previewImage'],['#p-qr','qr'],['#p-file','file']].forEach(([id,k]) => $(id).onchange = e => { if(e.target.files[0]){ fl[k] = e.target.files[0]; drawPanelForm(); } });
+}
+
+/* ---------- actions ---------- */
+async function doAuth(){
+  const email = $('#a-email').value.trim(), pass = $('#a-pass').value, name = $('#a-name').value.trim();
+  S.authErr = ''; S.authMsg = '';
+  const fail = m => { S.authErr = m; render(); };
+  if(!email) return fail('Enter your email.');
+  S.busy = true;
+  try{
+    if(S.authMode === 'forgot'){
+      try{ await sendPasswordResetEmail(auth, email); }catch(e){ if(e.code !== 'auth/user-not-found') throw e; }
+      S.busy = false; S.authMsg = 'If this email has an account, a reset link is on its way. Check spam too.'; return render();
+    }
+    if(!pass) { S.busy = false; return fail('Enter your password.'); }
+    if(S.authMode === 'signup'){
+      if(!name) { S.busy = false; return fail('Enter your name.'); }
+      const c = await createUserWithEmailAndPassword(auth, email, pass);
+      await updateProfile(c.user, {displayName:name});
+      try{ await setDoc(doc(db, C.users, c.user.uid), {name, email:email.toLowerCase(), createdAt:Date.now()}); }catch(e){}
+    } else await signInWithEmailAndPassword(auth, email, pass);
+    S.busy = false;
+  }catch(e){ S.busy = false; fail(authError(e)); }
+}
+
+async function submitOrder(){
+  const p = S.panels.find(x => x.id === SH.id);
+  const err = m => { $('#b-err').textContent = m; };
+  const utr = ($('#b-utr').value || '').replace(/\D/g, '');
+  if(!SH.file) return err('Choose your payment screenshot.');
+  if(utr.length !== 12) return err('UTR must be exactly 12 digits.');
+  const btn = $('#b-go'); btn.disabled = true; btn.textContent = 'Uploading...'; $('#b-bar').hidden = false; err('');
+  try{
+    const url = await uploadCloud(SH.file, n => { $('#b-bar i').style.width = n + '%'; });
+    btn.textContent = 'Sending...';
+    const u = S.user, oid = u.uid + '_' + p.id, now = Date.now();
+    const batch = writeBatch(db);
+    batch.set(doc(db, C.utrs, utr), {uid:u.uid, createdAt:now});
+    batch.set(doc(db, C.orders, oid), {uid:u.uid, email:u.email, name:u.displayName || u.email.split('@')[0], panelId:p.id, panelTitle:p.title, price:p.price, utr, screenshot:url, status:'pending', note:'', createdAt:now});
+    await batch.commit();
+    closeSheet(); toast('Sent. Admin will check your payment.'); await refresh(true);
+  }catch(e){
+    btn.disabled = false; btn.textContent = 'Submit for approval'; $('#b-bar').hidden = true;
+    err(e.code === 'permission-denied' ? 'This UTR was already used, or the request is not allowed.' : e.message);
+  }
+}
+
+async function decide(id, status){
+  const o = S.aOrders.find(x => x.id === id); if(!o) return;
+  let note = '';
+  if(status === 'rejected'){ note = prompt('Reason for rejecting (user will see this):', 'UTR or screenshot does not match.'); if(note === null) return; }
+  try{
+    const b = writeBatch(db);
+    b.update(doc(db, C.orders, id), {status, note});
+    if(status === 'rejected') b.delete(doc(db, C.utrs, o.utr));
+    await b.commit();
+    o.status = status; o.note = note; toast(status === 'approved' ? 'Approved. User can download now.' : 'Rejected.'); render();
+  }catch(e){ toast('Failed: ' + e.message); }
+}
+
+async function savePanel(){
+  const f = SH.f, fl = SH.files, err = m => { $('#p-err').textContent = m; };
+  if(!f.title.trim()) return err('Enter the panel name.');
+  if(!(Number(f.price) > 0)) return err('Enter a price.');
+  if(f.previewVideo && !driveId(f.previewVideo)) return err('Preview video must be a Google Drive link.');
+  if(f.setupVideo && !driveId(f.setupVideo)) return err('Setup video must be a Google Drive link.');
+  const btn = $('#p-go'); btn.disabled = true; $('#p-bar').hidden = false; err('');
+  try{
+    const jobs = [['previewImage','Uploading photo'],['qr','Uploading QR'],['file','Uploading panel file']].filter(([k]) => fl[k]);
+    for(const [k, label] of jobs){
+      btn.textContent = label + '...';
+      const url = await uploadCloud(fl[k], n => { $('#p-bar i').style.width = n + '%'; });
+      if(k === 'file'){ f.fileUrl = url; f.fileName = fl[k].name; } else f[k] = url;
+    }
+    btn.textContent = 'Saving...';
+    const id = SH.id || doc(collection(db, C.panels)).id;
+    const old = S.aPanels.find(x => x.id === id);
+    await setDoc(doc(db, C.panels, id), {title:f.title.trim(), price:Number(f.price), desc:f.desc.trim(), previewImage:f.previewImage, previewVideo:f.previewVideo.trim(), qr:f.qr, active:!!f.active, createdAt: old ? old.createdAt : Date.now()});
+    await setDoc(doc(db, C.secrets, id), {setupVideo:f.setupVideo.trim(), fileUrl:f.fileUrl, fileName:f.fileName});
+    delete S.secrets[id];
+    closeSheet(); toast('Panel saved.'); await refresh(true);
+  }catch(e){ btn.disabled = false; btn.textContent = 'Save panel'; $('#p-bar').hidden = true; err(e.message); }
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click', async e => {
+  const t = e.target.closest('[data-act]'); if(!t) return;
+  const a = t.dataset.act, id = t.dataset.id;
+  if(a === 'veil'){ if(e.target === t) closeSheet(); return; }
+  if(a === 'close') return closeSheet();
+  if(a === 'amode'){ S.authMode = t.dataset.m; S.authErr = ''; S.authMsg = ''; return render(); }
+  if(a === 'auth') return doAuth();
+  if(a === 'logout'){ closeSheet(); return signOut(auth); }
+  if(a === 'view'){ S.view = t.dataset.v; return render(); }
+  if(a === 'atab'){ S.aTab = t.dataset.t; return render(); }
+  if(a === 'afilter'){ S.aFilter = t.dataset.f; return render(); }
+  if(a === 'reload'){ S.ready = false; render(); return refresh(); }
+  if(a === 'buy'){ SH = {type:'buy', id, step:'pay', file:null, preview:'', utr:''}; return buySheet(); }
+  if(a === 'paid'){ SH.step = 'proof'; return buySheet(); }
+  if(a === 'backpay'){ SH.step = 'pay'; return buySheet(); }
+  if(a === 'submitorder') return submitOrder();
+  if(a === 'preview'){ const p = S.panels.find(x => x.id === id); return videoSheet(p.title + ' preview', p.previewVideo); }
+  if(a === 'watch'){ try{ const s = await getSecret(id); const p = S.panels.find(x => x.id === id); s.setupVideo ? videoSheet(p.title + ' setup', s.setupVideo) : toast('Setup video not added yet.'); }catch(err){ toast(err.message); } return; }
+  if(a === 'download'){ try{ const s = await getSecret(id); s.fileUrl ? window.open(s.fileUrl, '_blank', 'noopener') : toast('File not added yet. Contact admin.'); }catch(err){ toast(err.message); } return; }
+  if(a === 'approve') return decide(id, 'approved');
+  if(a === 'reject') return decide(id, 'rejected');
+  if(a === 'newpanel') return panelForm(null);
+  if(a === 'editpanel') return panelForm(S.aPanels.find(x => x.id === id));
+  if(a === 'delpanel'){
+    if(!confirm('Delete this panel? Existing buyers lose access to its files.')) return;
+    try{ await deleteDoc(doc(db, C.panels, id)); await deleteDoc(doc(db, C.secrets, id)); toast('Deleted.'); await refresh(true); }catch(err){ toast(err.message); }
+    return;
+  }
+  if(a === 'savepanel') return savePanel();
+});
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape') closeSheet();
+  if(e.key === 'Enter' && e.target.closest('.auth')) doAuth();
+});
+function markSeen(){ setTimeout(() => { Object.values(S.orders).forEach(o => { if(o.status === 'approved') seen[o.id] = 1; }); localStorage.setItem('bp_seen', JSON.stringify(seen)); }, 1800); }
+</script>
+</body>
+</html>
